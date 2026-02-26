@@ -1,6 +1,7 @@
 <h1 align="center">
+  <img src="./Logo e fotos/logo.jpeg" width="120px" alt="Sitegen tech Logo" />
   <br>
-  Sua Empresa - Sistema Integrado de Gestão
+  Sitegen tech - Sistema Integrado de Gestão
 </h1>
 
 <p align="center">
@@ -25,12 +26,18 @@
 - **Gestão de Postos:** Plataforma de gerenciamento de localidades e filiais.
 - **Ecossistema Integrado:** Autenticação moderna, design responsivo com Tailwind CSS e componentes acessíveis Shadcn/UI.
 
-## 🚀 Como Funciona
+## 🚀 Demonstração
 
-O sistema foi arquitetado para centralizar as operações internas de uma corporação, fornecendo uma interface elegante e de alta performance.
+### Dashboard Principal
+![Dashboard Principal](./Logo%20e%20fotos/Base.png)
 
-[📸 *Insira aqui uma screenshot do Dashboard Principal*]
-[📸 *Insira aqui uma screenshot da Base de Conhecimento*]
+### Gestão de Acessos
+![Acessos](./Logo%20e%20fotos/Acessos.png)
+
+### Central de Pendências
+![Pendências](./Logo%20e%20fotos/Pendencias.png)
+
+---
 
 ## 🛠️ Stack Tecnológica
 
@@ -45,8 +52,8 @@ O sistema foi arquitetado para centralizar as operações internas de uma corpor
 
 1. Clone este repositório:
 ```bash
-git clone https://github.com/SeuUsuario/sua-empresa-gestao.git
-cd sua-empresa-gestao
+git clone https://github.com/SeuUsuario/sitegen-tech-gestao.git
+cd sitegen-tech-gestao
 ```
 
 2. Instale as dependências:
@@ -79,6 +86,14 @@ O sistema estará disponível em `http://localhost:3000`.
 ├── public/            # Assets estáticos, logos, etc.
 └── scripts/           # Scripts utilitários de banco e dados mock
 ```
+
+## 🔐 Notas de Segurança (Auditoria de Projeto)
+
+Este repositório foi higienizado e auditado para proteger sua integridade. 
+As seguintes ações preventivas foram aplicadas na documentação do código (consulte o relatório do analisador de projetos para mais detalhes):
+- **Variáveis Fixadas Removidas:** Tokens e URLs sensíveis do Supabase (`SUPABASE_URL`, etc) foram delegados estritamente ao `.env` que está devidamente mapeado no `.gitignore`.
+- **Prevenção de Exposição de Regras de Negócio:** Algoritmos sensíveis originais da empresa (como cálculos proprietários de sessões) não são publicados no frontend portfólio.
+- **APIs Limpas:** Nenhum dado massivo de cliente físico está acoplado ao build do front-end. Toda a busca de estatísticas usa clients Supabase com o devido `Auth Middleware`.
 
 ## 🤝 Como contribuir
 
