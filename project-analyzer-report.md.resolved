@@ -1,0 +1,53 @@
+# Relatório de Análise de Projeto: E-PROSYS (Base de Conhecimento / Dashboard)
+
+## Visão Geral
+
+O projeto é um sistema integrado de gestão empresarial (E-PROSYS) construído como uma aplicação web moderna. Ele utiliza a stack **Next.js (App Router)** com **React**, estilizado usando **Tailwind CSS** e componentes do **Radix UI** (através da biblioteca `shadcn/ui` ou similar). O backend/banco de dados é provido pelo **Supabase**. O sistema funciona como um portal centralizado (dashboard) provendo acesso a vários submódulos operativos da empresa, como a base de conhecimento, pendências, acessos e postos.
+
+## Mapeamento de Funcionalidades
+
+| Funcionalidade | Descrição | Módulos Relacionados | Arquivos Chave |
+|----------------|-----------|----------------------|----------------|
+| **Dashboard Principal** | Tela inicial que exibe o resumo em tempo real de pendências, atalhos rápidos e uma "Senha do Dia" temporal. | Home/Dashboard | [app/page.tsx](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/app/page.tsx) |
+| **Base de Conhecimento** | Módulo para consulta, pesquisa e gerenciamento de informações úteis e tutoriais. | Base de Conhecimento | `app/base-conhecimento/*`, `app/api/dashboard/knowledge-base-stats/*` |
+| **Central de Pendências** | Gestão de tarefas com tracking de status (Andamento, Concluída) e métricas de resoluções diárias. | Pendências | `app/pendencias/*`, [app/api/dashboard/pendencies-stats/route.ts](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/app/api/dashboard/pendencies-stats/route.ts) |
+| **Gestão de Acessos** | Controle de usuários, permissões e endpoints de administração. | Acessos | `app/acessos/*` |
+| **Gestão de Postos** | Gerenciamento de localidades ou postos de serviço, possivelmente integrando com mapas. | Postos | `app/postos/*` |
+| **Autenticação e Sessão** | Controle de rotas protegidas e manipulação de sessão com base em tokens. | Auth / Segurança | [middleware.ts](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/middleware.ts), `utils/supabase/*`, `app/login/*` |
+| **Painel Administrativo** | Área restrita para configurações avançadas e gerenciais do sistema. | Dashboard Admin | `app/dashboard-administrativa/*`, `app/configuracao/*` |
+
+## Arquivos Importantes e Responsabilidades
+
+| Arquivo/Diretório | Responsabilidade Principal | Descrição Detalhada |
+|-------------------|----------------------------|---------------------|
+| [package.json](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/package.json) | Gerenciamento de Dependências | Define bibliotecas críticas como `@supabase/supabase-js`, `@supabase/ssr`, `zustand` (para o estado global), `framer-motion` (animações) e `recharts` (gráficos). |
+| [app/page.tsx](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/app/page.tsx) | Entry point do Front-end | Renderiza a homepage, contém lógicas `setInterval` de relógio e um gerador de algoritmo para a senha de suporte do dia. |
+| [middleware.ts](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/middleware.ts) | Middleware de Proteção | Roda o `updateSession` (configurado em `@/utils/supabase/middleware`) em todas as requisições para renovar tokens e potencialmente bloquear rotas para usuários não autenticados. |
+| [lib/store.ts](file:///c:/Users/User%202/Desktop/Sistemas/Base%20de%20conhecimento/lib/store.ts) | Estado Global | Arquivo com a definição das stores do `Zustand` para gerenciar informações persistentes ou transitórias no lado do cliente. |
+| `app/api/` | Rotas de API (Backend) | Funciona como o BFF (Backend for Frontend), entregando agregações de dados (estatísticas e resumos) pro dashboard principal. |
+| `lib/supabase.ts` | Cliente do Banco | Configura ou consolida a intanciação/tipagem do cliente Supabase para o resto do projeto reutilizar. |
+
+## Detecção de Informações Sensíveis
+
+### Variáveis de Ambiente
+*   **Arquivo**: Não detectado diretamente nos arquivos físicos da pasta principal (arquivos `.env` ignorados com sucesso).
+*   **Conteúdo Potencialmente Sensível**: O projeto depende explicitamente de chaves como `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` para o funcionamento normal em desenvolvimento e produção.
+*   **Recomendação**: Manter o rigor no `.gitignore`. Assegurar que privilégios RLS (Row Level Security) estão ativos no Supabase, dado que a `ANON_KEY` fica exposta no bundle do frontend.
+
+### APIs Expostas
+*   **Endpoint:** Rotas como `/api/dashboard/pendencies-stats`
+*   **Potencial Vulnerabilidade:** Se os `Route Handlers` do Next.js não estiverem validando o acesso com o cliente servidor (`createServerClient` do Supabase), os dados demográficos/métricas da empresa estarão dispostos em acesso aberto.
+*   **Recomendação:** Garantir que todos os arquivos dentro de `app/api/*` possuam verificação de autenticação e proteção contextual à conta antes de devolver o JSON.
+
+### Credenciais Hardcoded & Lógica de Segurança de Negócios Exposta
+*   **Arquivo**: `app/page.tsx` (Linhas ~24-38)
+*   **Conteúdo**: 
+    ```javascript
+    const passSuporte = (Math.floor((dateNumber / 8369) * 10000) % 10000).toString()
+    const passEprosys = (Math.floor((dateNumber / 8597) * 10000) % 10000).toString()
+    ```
+*   **Potencial Vulnerabilidade**: O cálculo matemático em código aberto (lado do cliente) permite que qualquer pessoa acessando a URL do dashboard faça engenharia reversa para descobrir como a "Senha do Dia" de Suporte/E-PROSYS é gerada para todo e qualquer dia futuro ou retroativo. 
+*   **Recomendação**: Se a "Senha do Dia" confere efetivamente poder de acesso a sistemas físicos ou sistemas de terceiros, sua lógica construtiva *jamais* deveria estar no cliente (`"use client"`). O ideal é chamar um endpoint backend que retorne unicamente a string final correspondente ao dia atual, baseada na conferência do token do requerente.
+
+### Outros Dados Confidenciais
+*   Não foram detectados dados estáticos do tipo `users.json` ou PII acoplados no lado do cliente do framework de componentes. O acoplamento de dados ocorre dinamicamente nas rotas do Next.js.
